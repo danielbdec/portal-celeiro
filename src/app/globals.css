@@ -1,0 +1,139 @@
+:root {
+  --cor-primaria: #1e4321;
+  --cor-secundaria: #8cc249;
+  --cor-sidebar-gradiente-topo: #1e4321;
+  --cor-sidebar-gradiente-base: #3a6b2c;
+  --cor-fundo-principal: #f8fbf7;
+  --fonte-principal: 'Segoe UI', 'Poppins', sans-serif;
+}
+
+body {
+  background: var(--cor-fundo-principal);
+  font-family: var(--fonte-principal);
+  transition: background-color 0.3s ease-in-out;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Ajustes visuais do menu */
+.ant-menu-item .anticon svg {
+  color: white !important;
+  transition: color 0.3s ease-in-out;
+}
+
+.ant-menu-item a {
+  color: white !important;
+  font-weight: 500;
+  transition: color 0.3s ease-in-out;
+}
+
+.ant-menu-item-selected .anticon svg {
+  color: var(--cor-secundaria) !important;
+}
+
+.ant-menu-item-selected {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+}
+
+.ant-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px;
+}
+
+/* Animações gerais */
+main, .ant-menu-item, .ant-btn, .ant-menu-item .anticon {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Botão institucional */
+.ant-btn {
+  background: var(--cor-secundaria) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 20px !important;
+  font-weight: bold !important;
+  padding: 6px 20px !important;
+}
+
+.ant-btn:hover {
+  background-color: #5fa738 !important;
+  color: white !important;
+}
+
+/* Ajuste de alinhamento dos itens do menu */
+:where(.ant-menu-light) .ant-menu-item {
+  padding-left: 12px !important;
+  justify-content: flex-start !important;
+  color: white !important;
+}
+
+:where(.ant-menu-light) .ant-menu-title-content {
+  text-align: left !important;
+}
+
+.ant-menu-submenu-title, 
+.ant-menu-submenu-title span,
+.ant-menu-submenu-title a {
+  color: white !important;
+}
+
+/* 👇 CORREÇÃO CRÍTICA adicionada */
+:where(.ant-menu-light) .ant-menu-submenu-title {
+  padding-left: 12px !important;
+}
+
+
+/* Fonte do menu igual à da logo */
+.ant-menu-item,
+.ant-menu-submenu-title {
+  font-family: var(--fonte-principal) !important;
+  font-weight: 600 !important;
+}
+
+
+/* Hover consistente para itens com submenu */
+.ant-menu-submenu-title:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px;
+}
+
+
+/* Estilo para submenu selecionado */
+.ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px;
+}
+
+
+/* Submenu popup (tooltip) em menu colapsado */
+.ant-menu-submenu-popup .ant-menu {
+  background-color: var(--cor-sidebar-gradiente-topo) !important;
+  border-radius: 8px;
+}
+
+.ant-menu-submenu-popup .ant-menu-item {
+  color: white !important;
+  padding-left: 12px !important;
+}
+
+.ant-menu-submenu-popup .ant-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+
+/* Remove fundo do submenu pai selecionado */
+.ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background-color: transparent !important;
+}
+
+/* Estiliza tooltip no menu colapsado */
+.ant-tooltip .ant-tooltip-inner {
+  background-color: var(--cor-sidebar-gradiente-topo) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+}

@@ -1,0 +1,106 @@
+[
+  {
+    "email": "daniel.carvalho@celeirosementes.com.br",
+    "perfil": "admin"
+  },
+  {
+    "email": "leonardo.alves@gcsagro.com.br",
+    "perfil": "admin",
+    "status": "ativo"
+  },
+  {
+    "email": "silvio@celeirosementes.com.br",
+    "perfil": "admin",
+    "status": "ativo"
+  },
+  {
+    "email": "murillo.malvaso@celeirosementes.com.br",
+    "perfil": "aprovador",
+    "status": "ativo"
+  },
+  {
+    "email": "mario.santos@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "nilton.santos@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "fernando.filho@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "ramon.riffel@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "francisco.ambos@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "fabio.farias@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "gustavo.dias@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "lindomar.moreno@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "diogo.padilha@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  },
+  {
+    "email": "vinicius.balbino@celeirosementes.com.br",
+    "perfil": "aprovador",
+    "status": "ativo"
+  },
+  {
+    "email": "pedro.pontes@gcsagro.com.br",
+    "perfil": "admin",
+    "status": "ativo"
+  },
+  {
+    "email": "leonardo.alves@celeirosementes.com.br",
+    "perfil": "aprovador",
+    "status": "ativo"
+  },
+  {
+    "email": "adriano.oliveira@gcsagro.com.br",
+    "perfil": "credito",
+    "status": "ativo"
+  },
+  {
+    "email": "bianca.monteiro@celeirosementes.com.br",
+    "perfil": "credito",
+    "status": "ativo"
+  },
+  {
+    "email": "wanessa.santos@gcsagro.com.br",
+    "perfil": "credito",
+    "status": "ativo"
+  },
+  {
+    "email": "luciano.guimaraes@gcsagro.com.br",
+    "perfil": "admin",
+    "status": "ativo"
+  },
+  {
+    "email": "taiuan.almeida@celeirosementes.com.br",
+    "perfil": "vendedor",
+    "status": "ativo"
+  }
+]

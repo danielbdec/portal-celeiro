@@ -1,0 +1,273 @@
+"use client";
+
+import { useState } from "react";
+
+interface Produto {
+  produto_nome: string;
+  tratamento?: string;
+  quantidade: number;
+  valor_unitario: number;
+  status_produto?: string;
+  motivo_reprovacao?: string;
+}
+
+interface Pedido {
+  ano?: number;
+  tipo_pedido?: string;
+  id: number;
+  cliente_nome: string;
+  cliente_codigo: string;
+  frete: string;
+  vl_primeira_parc: number;
+  vl_segunda_parc: number;
+  produtos: Produto[];
+  obs_vendedor?: string;
+  cnpj?: string;
+  mes_primeiro_pgto?: number;
+  mes_segundo_pgto?: number;
+}
+
+interface Props {
+  pedido: Pedido;
+  onClose: () => void;
+}
+
+export default function ModalDetalhes({ pedido, onClose }: Props) {
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const total = (pedido.produtos || []).reduce((s, p) => s + p.valor_unitario * p.quantidade, 0);
+  const formatarCnpjCpf = (valor?: string) => {
+    if (!valor) return "";
+    const cleaned = valor.replace(/\D/g, "");
+    if (cleaned.length === 11) return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    if (cleaned.length === 14) return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+    return valor;
+  };
+
+
+  const [produtosState, setProdutosState] = useState<Produto[]>(pedido.produtos);
+  const [statusProdutos, setStatusProdutos] = useState<{ status?: string; loading?: boolean }[]>([]);
+  const [motivoReprovacao, setMotivoReprovacao] = useState<string[]>([]);
+  const [mostrarMotivo, setMostrarMotivo] = useState<number | null>(null);
+  const [acaoAtual, setAcaoAtual] = useState<string[]>([]);
+  const algumPendente = produtosState.some((p) => !p.status_produto);
+
+  const getStatusBadgeOuAcoes = (p: Produto, idx: number) => {
+    const status = p.status_produto;
+    const loading = statusProdutos[idx]?.loading;
+
+    if (status === "aprovado") {
+      return <span style={{ backgroundColor: "#d4edda", color: "#155724", padding: "4px 8px", borderRadius: "4px" }}>✅ Aprovado</span>;
+    }
+    if (status === "reprovado") {
+      return (
+        <span style={{ backgroundColor: "#f8d7da", color: "#721c24", padding: "4px 8px", borderRadius: "4px" }}>
+          ❌ Reprovado{p.motivo_reprovacao ? ` — ${p.motivo_reprovacao}` : ""}
+        </span>
+      );
+    }
+    return (
+      <div>
+        <button
+          disabled={loading}
+          onClick={() => handleAcaoProduto(idx, "aprovado")}
+          style={{ marginRight: "6px" }}
+        >
+          {loading && acaoAtual[idx] === "aprovado" ? "⏳" : "✔️"}
+        </button>
+        <button
+          disabled={loading}
+          onClick={() => abrirMotivo(idx)}
+        >
+          {loading && acaoAtual[idx] === "reprovado" ? "⏳" : "❌"}
+        </button>
+      </div>
+    );
+  };
+
+  const abrirMotivo = (idx: number) => setMostrarMotivo(idx);
+  const confirmarMotivo = (idx: number) => {
+    setMostrarMotivo(null);
+    handleAcaoProduto(idx, "reprovado");
+  };
+
+  const handleAcaoProduto = async (idx: number, status: "aprovado" | "reprovado") => {
+    const produto = produtosState[idx];
+    const payload = {
+      id_pedido: pedido.id,
+      item: idx + 1,
+      status,
+      produto_codigo: produto.produto_nome,
+      mensagem: status === "reprovado" ? motivoReprovacao[idx] : ""
+    };
+
+    setStatusProdutos((prev) => {
+      const copia = [...prev];
+      copia[idx] = { loading: true };
+      return copia;
+    });
+
+    setAcaoAtual((prev) => {
+      const copia = [...prev];
+      copia[idx] = status;
+      return copia;
+    });
+
+    try {
+      const response = await fetch("/api/pedidos-aprovacao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error("Erro ao registrar");
+
+      setStatusProdutos((prev) => {
+        const copia = [...prev];
+        copia[idx] = { status };
+        return copia;
+      });
+
+      setProdutosState((prev) => {
+        const copia = [...prev];
+        copia[idx] = { ...copia[idx], status_produto: status };
+        return copia;
+      });
+
+      window.dispatchEvent(new Event("refreshPedidos"));
+    } catch (err) {
+      console.error("Erro ao enviar ação:", err);
+      alert("Erro ao registrar aprovação/reprovação. Tente novamente.");
+      setStatusProdutos((prev) => {
+        const copia = [...prev];
+        copia[idx] = {};
+        return copia;
+      });
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
+      <div style={{ backgroundColor: "#fff", borderRadius: "12px", width: "90%", maxWidth: "900px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+        <div style={{ background: "linear-gradient(to right, #1e4321, #47763b)", color: "white", padding: "1rem 1.5rem", borderTopLeftRadius: "12px", borderTopRightRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h5 style={{ margin: 0 }}>Detalhes do Pedido</h5>
+          <button onClick={() => {
+            if (algumPendente) {
+              alert("Você precisa aprovar ou reprovar todos os itens antes de fechar.");
+              return;
+            }
+            onClose();
+          }} style={{ background: "none", border: "none", fontSize: "1.5rem", color: "white", cursor: "pointer" }}>×</button>
+        </div>
+
+        <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <div style={{ border: "1px solid #28a745", borderRadius: "10px", padding: "1rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", flexWrap: "wrap" }}>
+  <div>
+    <p><strong>👤 Cliente:</strong> {pedido.cliente_nome} ({pedido.cliente_codigo})</p>
+    {pedido.cnpj && <p><strong>🧾 CNPJ/CPF:</strong> {formatarCnpjCpf(pedido.cnpj)}</p>}
+    <p><strong>🚚 Frete:</strong> {pedido.frete}</p>
+  </div>
+  <div>
+    <p style={{
+      backgroundColor: pedido.tipo_pedido?.toLowerCase() === "bonificação" ? "#f0ad4e" : "#5cb85c",
+      color: "#fff",
+      padding: "6px 12px",
+      borderRadius: "6px",
+      fontWeight: "bold",
+      fontSize: "14px",
+      textTransform: "uppercase"
+    }}>
+      {pedido.tipo_pedido || "NÃO INFORMADO"}
+    </p>
+  </div>
+</div>
+          </div>
+
+          <div style={{ border: "1px solid #28a745", borderRadius: "10px", padding: "1rem" }}>
+            <p><strong>💰 Pagamento:</strong></p>
+            {pedido.vl_segunda_parc === 0 ? (
+              <p>• Parcela Única: {pedido.vl_primeira_parc.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} {pedido.mes_primeiro_pgto ? `em ${meses[pedido.mes_primeiro_pgto - 1]} de ${pedido.ano}` : ""}</p>
+            ) : (
+              <>
+                <p>1ª Parcela: {pedido.vl_primeira_parc.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} {pedido.mes_primeiro_pgto ? `em ${meses[pedido.mes_primeiro_pgto - 1]}` : ""}</p>
+                <p>2ª Parcela: {pedido.vl_segunda_parc.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} {pedido.mes_segundo_pgto ? `em ${meses[pedido.mes_segundo_pgto - 1]}` : ""}</p>
+              </>
+            )}
+            <p style={{ fontWeight: "bold", color: "#1e4321", marginTop: "1rem" }}>
+              • 🟢 Total do Pedido: {total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </p>
+          </div>
+
+          <div style={{ border: "1px solid #28a745", borderRadius: "10px", padding: "1rem" }}>
+            <p><strong>📦 Produtos:</strong></p>
+            <div className="produtos-desktop">
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead style={{ background: "linear-gradient(to right, #2f5a32, #1e4321)", color: "white" }}>
+                  <tr>
+                    <th style={{ padding: "10px", border: "1px solid #1e4321" }}>Produto</th>
+                    <th style={{ padding: "10px", border: "1px solid #1e4321" }}>Qtd</th>
+                    <th style={{ padding: "10px", border: "1px solid #1e4321" }}>Valor Unit</th>
+                    <th style={{ padding: "10px", border: "1px solid #1e4321" }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {produtosState.map((p, idx) => (
+                    <tr key={idx}>
+                      <td style={{ padding: "8px" }}>{p.produto_nome} {p.tratamento && `(${p.tratamento})`}</td>
+                      <td style={{ padding: "8px" }}>{p.quantidade}</td>
+                      <td style={{ padding: "8px" }}>{p.valor_unitario.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                      <td style={{ padding: "8px" }}>{getStatusBadgeOuAcoes(p, idx)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="produtos-mobile">
+              {produtosState.map((p, idx) => (
+                <div key={idx} style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "0.75rem", marginBottom: "0.75rem" }}>
+                  <p style={{ margin: 0, fontWeight: "bold" }}>📦 {p.produto_nome} {p.tratamento && `(${p.tratamento})`}</p>
+                  <p style={{ margin: "4px 0" }}><strong>Qtd:</strong> {p.quantidade}</p>
+                  <p style={{ margin: "4px 0" }}><strong>Valor Unit:</strong> {p.valor_unitario.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
+                  <div style={{ marginTop: "8px" }}>{getStatusBadgeOuAcoes(p, idx)}</div>
+                </div>
+              ))}
+            </div>
+
+            {mostrarMotivo !== null && (
+              <div style={{ marginTop: "1rem" }}>
+                <label>Motivo da Reprovação:</label>
+                <textarea
+                  style={{ width: "100%", minHeight: "60px", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                  value={motivoReprovacao[mostrarMotivo] || ""}
+                  onChange={(e) => {
+                    const nova = [...motivoReprovacao];
+                    nova[mostrarMotivo] = e.target.value;
+                    setMotivoReprovacao(nova);
+                  }}
+                />
+                <button onClick={() => confirmarMotivo(mostrarMotivo)} style={{ marginTop: "8px", padding: "6px 12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
+                  Enviar Reprovação
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ border: "1px solid #28a745", borderRadius: "10px", padding: "1rem" }}>
+            <strong style={{ color: "#1e4321" }}>📝 Observação do Vendedor:</strong>
+            <p style={{ marginTop: "0.5rem" }}>{pedido.obs_vendedor?.trim() || "Nenhuma observação registrada."}</p>
+          </div>
+        </div>
+      </div>
+      <style>{`
+        @media (max-width: 600px) {
+          .produtos-desktop { display: none !important; }
+          .produtos-mobile { display: block !important; }
+        }
+        @media (min-width: 601px) {
+          .produtos-desktop { display: block !important; }
+          .produtos-mobile { display: none !important; }
+        }
+      `}</style>
+    </div>
+  );
+}
